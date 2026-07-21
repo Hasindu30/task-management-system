@@ -28,6 +28,17 @@ export interface Pagination {
   pages: number;
 }
 
+export interface DashboardStats {
+  totalTasks: number;
+  pendingTasks: number;
+  inProgressTasks: number;
+  completedTasks: number;
+  highPriorityTasks: number;
+  mediumPriorityTasks: number;
+  lowPriorityTasks: number;
+  overdueTasks: number;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
