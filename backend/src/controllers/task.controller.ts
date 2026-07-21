@@ -80,3 +80,54 @@ export const getTaskById = async (
     next(error);
   }
 };
+
+export const updateTask = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new ApiError(401, "Authentication required");
+    }
+
+    const taskId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const updatedTask = await taskService.updateTask(userId, taskId, req.body);
+
+    res.status(200).json(
+      apiResponse({
+        success: true,
+        message: "Task updated successfully",
+        data: { task: updatedTask },
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteTask = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new ApiError(401, "Authentication required");
+    }
+
+    const taskId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    await taskService.deleteTask(userId, taskId);
+
+    res.status(200).json(
+      apiResponse({
+        success: true,
+        message: "Task deleted successfully",
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+};

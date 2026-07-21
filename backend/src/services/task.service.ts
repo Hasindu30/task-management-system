@@ -1,5 +1,6 @@
+import { Prisma } from "@prisma/client";
 import prisma from "../config/prisma";
-import { CreateTaskInput, GetTasksQuery } from "../schemas/task.schema";
+import { CreateTaskInput, UpdateTaskInput, GetTasksQuery } from "../schemas/task.schema";
 import { ApiError } from "../utils/api-error";
 
 export const createTask = async (userId: string, input: CreateTaskInput) => {
@@ -18,10 +19,11 @@ export const createTask = async (userId: string, input: CreateTaskInput) => {
 };
 
 export const getTasks = async (userId: string, query: GetTasksQuery) => {
-  const { page, limit, status } = query;
+  const { page, limit, status, priority, search, startDate, endDate, sortBy, order } = query;
   const skip = (page - 1) * limit;
 
-  const whereClause: { userId: string; status?: GetTasksQuery["status"] } = {
+  // Build Prisma where clause with user isolation
+  const whereClause: Prisma.TaskWhereInput = {
     userId,
   };
 
@@ -29,12 +31,39 @@ export const getTasks = async (userId: string, query: GetTasksQuery) => {
     whereClause.status = status;
   }
 
+  if (priority) {
+    whereClause.priority = priority;
+  }
+
+  // Case-insensitive search on title OR description
+  if (search && search.trim() !== "") {
+    const searchTerm = search.trim();
+    whereClause.OR = [
+      { title: { contains: searchTerm, mode: "insensitive" } },
+      { description: { contains: searchTerm, mode: "insensitive" } },
+    ];
+  }
+
+  // Due date range filtering
+  if (startDate || endDate) {
+    whereClause.dueDate = {};
+    if (startDate) {
+      whereClause.dueDate.gte = startDate;
+    }
+    if (endDate) {
+      whereClause.dueDate.lte = endDate;
+    }
+  }
+
+  // Execute database queries in parallel
   const [tasks, total] = await Promise.all([
     prisma.task.findMany({
       where: whereClause,
       skip,
       take: limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        [sortBy]: order,
+      },
     }),
     prisma.task.count({
       where: whereClause,
@@ -58,7 +87,7 @@ export const getTaskById = async (userId: string, taskId: string) => {
   const task = await prisma.task.findFirst({
     where: {
       id: taskId,
-      userId, // User isolation: ensures user cannot access another user's task
+      userId, // User isolation
     },
   });
 
@@ -67,4 +96,29 @@ export const getTaskById = async (userId: string, taskId: string) => {
   }
 
   return task;
+};
+
+export const updateTask = async (userId: string, taskId: string, input: UpdateTaskInput) => {
+  // First verify task exists and belongs to user
+  await getTaskById(userId, taskId);
+
+  const updatedTask = await prisma.task.update({
+    where: {
+      id: taskId,
+    },
+    data: input,
+  });
+
+  return updatedTask;
+};
+
+export const deleteTask = async (userId: string, taskId: string) => {
+  // First verify task exists and belongs to user
+  await getTaskById(userId, taskId);
+
+  await prisma.task.delete({
+    where: {
+      id: taskId,
+    },
+  });
 };
