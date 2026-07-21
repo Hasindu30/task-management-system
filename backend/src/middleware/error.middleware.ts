@@ -9,7 +9,7 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ) => {
-  // Log error in development
+  
   if (env.NODE_ENV === "development") {
     console.error("Error:", err);
   }
@@ -26,7 +26,7 @@ export const errorHandler = (
     return;
   }
 
-  // Handle unknown errors
+  
   res.status(500).json(
     apiResponse({
       success: false,

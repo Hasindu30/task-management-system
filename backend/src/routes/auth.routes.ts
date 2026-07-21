@@ -9,7 +9,7 @@ const router = Router();
 // POST /api/auth/login
 router.post("/login", validate(loginSchema), authController.login);
 
-// GET /api/auth/me (Protected route)
+// GET /api/auth/me 
 router.get("/me", authenticate, authController.getMe);
 
 export default router;
