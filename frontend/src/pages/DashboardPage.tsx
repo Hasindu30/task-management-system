@@ -47,7 +47,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner / Welcome Header */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
@@ -88,7 +88,7 @@ const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* Dashboard Stats Grid */}
+      
       {!loading && !error && stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Total Tasks */}
@@ -109,7 +109,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Card 2: Pending Tasks */}
+          
           <Card className="hover:border-slate-300 transition-colors">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -127,7 +127,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Card 3: In Progress Tasks */}
+         
           <Card className="hover:border-slate-300 transition-colors">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -145,7 +145,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Card 4: Completed Tasks */}
+          
           <Card className="hover:border-slate-300 transition-colors">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -163,7 +163,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Card 5: High Priority */}
+         
           <Card className="hover:border-slate-300 transition-colors">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -181,7 +181,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Card 6: Medium Priority */}
+          
           <Card className="hover:border-slate-300 transition-colors">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -199,7 +199,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Card 7: Low Priority */}
+          
           <Card className="hover:border-slate-300 transition-colors">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -217,7 +217,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Card 8: Overdue Tasks */}
+          
           <Card className="hover:border-slate-300 transition-colors">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">

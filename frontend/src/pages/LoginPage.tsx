@@ -16,7 +16,7 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If already authenticated, redirect to dashboard or attempted URL
+  
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/dashboard";
   if (isAuthenticated) {
     return <Navigate to={from} replace />;

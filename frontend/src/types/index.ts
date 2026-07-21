@@ -39,6 +39,23 @@ export interface DashboardStats {
   overdueTasks: number;
 }
 
+export interface TaskListParams {
+  page?: number;
+  limit?: number;
+  status?: Status | "ALL";
+  priority?: Priority | "ALL";
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: "createdAt" | "updatedAt" | "dueDate";
+  order?: "asc" | "desc";
+}
+
+export interface TaskListData {
+  tasks: Task[];
+  pagination: Pagination;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
