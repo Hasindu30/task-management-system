@@ -7,4 +7,6 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV || "development",
   CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:5173",
   DATABASE_URL: process.env.DATABASE_URL || "",
+  JWT_SECRET: process.env.JWT_SECRET || "supersecretjwtkey_change_in_production",
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
 };

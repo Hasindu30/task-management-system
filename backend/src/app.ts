@@ -36,6 +36,10 @@ app.get("/api/health", (_req, res) => {
   );
 });
 
+// API Routes
+import authRoutes from "./routes/auth.routes";
+app.use("/api/auth", authRoutes);
+
 // 404 handler (must be after all routes)
 app.use(notFoundHandler);
 
