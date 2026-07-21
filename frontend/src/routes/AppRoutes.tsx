@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "../layouts/AppLayout";
+import { ProtectedRoute } from "./ProtectedRoute";
 import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
 import TasksPage from "../pages/TasksPage";
@@ -9,20 +10,23 @@ import NotFoundPage from "../pages/NotFoundPage";
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Redirect root to dashboard */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-      {/* Login page - standalone, no layout header */}
+      {/* Standalone Login Page */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Main app routes with AppLayout */}
+      {/* Main Layout routes */}
       <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/tasks" element={<TasksPage />} />
-      </Route>
+        {/* Redirect root to dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-      {/* 404 catch-all */}
-      <Route path="*" element={<NotFoundPage />} />
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+        </Route>
+
+        {/* 404 Catch-all */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 };
