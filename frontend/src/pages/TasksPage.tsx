@@ -2,9 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Search,
   ListTodo,
-  RefreshCw,
-  AlertCircle,
-  Loader2,
   SlidersHorizontal,
   Plus,
 } from "lucide-react";
@@ -16,6 +13,7 @@ import {
   deleteTask,
   type CreateTaskPayload,
 } from "../services/task.service";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { TaskTable } from "../components/tasks/TaskTable";
 import { TaskCard } from "../components/tasks/TaskCard";
 import { PaginationBar } from "../components/ui/PaginationBar";
@@ -25,6 +23,8 @@ import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { TaskForm } from "../components/tasks/TaskForm";
 import { ToastContainer, type ToastMessage } from "../components/ui/Toast";
 import { Button } from "../components/ui/Button";
+import { TaskRowSkeleton, TaskCardSkeleton } from "../components/ui/Skeleton";
+import { ErrorCard } from "../components/ui/ErrorCard";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -50,10 +50,12 @@ const SORT_OPTIONS: Array<{ label: string; value: "createdAt" | "updatedAt" | "d
 
 const LIMIT_OPTIONS = [5, 10, 20];
 
-
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const TasksPage: React.FC = () => {
+  useDocumentTitle("Tasks");
 
+  // ── Filter state ──────────────────────────────────────────────────────────
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState<Status | "ALL">("ALL");
@@ -63,20 +65,20 @@ const TasksPage: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
-
+  // ── Data state ────────────────────────────────────────────────────────────
   const [data, setData] = useState<TaskListData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-
+  // ── Modal state ───────────────────────────────────────────────────────────
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-
+  // ── Delete state ──────────────────────────────────────────────────────────
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-
+  // ── Toast state ───────────────────────────────────────────────────────────
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = (type: "success" | "error", message: string) => {
@@ -88,6 +90,7 @@ const TasksPage: React.FC = () => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  // ── Debounce search ───────────────────────────────────────────────────────
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,14 +103,14 @@ const TasksPage: React.FC = () => {
     }, 400);
   };
 
-
+  // ── Filter handlers ───────────────────────────────────────────────────────
   const handleStatusChange = (val: Status | "ALL") => { setStatus(val); setPage(1); };
   const handlePriorityChange = (val: Priority | "ALL") => { setPriority(val); setPage(1); };
   const handleSortByChange = (val: "createdAt" | "updatedAt" | "dueDate") => { setSortBy(val); setPage(1); };
   const handleOrderChange = (val: "asc" | "desc") => { setOrder(val); setPage(1); };
   const handleLimitChange = (val: number) => { setLimit(val); setPage(1); };
 
-
+  // ── Fetch tasks ───────────────────────────────────────────────────────────
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -138,6 +141,7 @@ const TasksPage: React.FC = () => {
     };
   }, []);
 
+  // ── Create ────────────────────────────────────────────────────────────────
   const openCreateForm = () => {
     setEditingTask(null);
     setIsFormOpen(true);
@@ -150,7 +154,7 @@ const TasksPage: React.FC = () => {
     await fetchTasks();
   };
 
-
+  // ── Edit ──────────────────────────────────────────────────────────────────
   const openEditForm = (task: Task) => {
     setEditingTask(task);
     setIsFormOpen(true);
@@ -165,6 +169,7 @@ const TasksPage: React.FC = () => {
     await fetchTasks();
   };
 
+  // ── Delete ────────────────────────────────────────────────────────────────
   const openDeleteConfirm = (task: Task) => {
     setDeletingTask(task);
   };
@@ -176,7 +181,6 @@ const TasksPage: React.FC = () => {
       await deleteTask(deletingTask.id);
       setDeletingTask(null);
       addToast("success", "Task deleted successfully!");
-      
       if (data?.tasks.length === 1 && page > 1) {
         setPage((p) => p - 1);
       } else {
@@ -204,49 +208,51 @@ const TasksPage: React.FC = () => {
     <>
       <div className="space-y-5">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <ListTodo className="h-6 w-6 text-blue-600" />
+            <ListTodo className="h-6 w-6 text-blue-600" aria-hidden="true" />
             <div>
               <h1 className="text-2xl font-bold text-slate-900">Tasks</h1>
               <p className="text-xs text-slate-500 mt-0.5">
                 {pagination
                   ? `${pagination.total} task${pagination.total !== 1 ? "s" : ""} total`
-                  : "Loading..."}
+                  : "Loading tasks..."}
               </p>
             </div>
           </div>
           <Button variant="primary" size="md" onClick={openCreateForm}>
-            <Plus className="h-4 w-4 mr-1.5" />
+            <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
             New Task
           </Button>
         </div>
 
-        {/*Filter Controls */}
+        {/* Filter Controls */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            <span>Filters & Search</span>
+            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>Filters &amp; Search</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Search */}
             <div className="relative sm:col-span-2 lg:col-span-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Search tasks..."
+                aria-label="Search tasks"
                 value={searchInput}
                 onChange={handleSearchChange}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               />
             </div>
 
             {/* Status Filter */}
             <select
               value={status}
+              aria-label="Filter by status"
               onChange={(e) => handleStatusChange(e.target.value as Status | "ALL")}
-              className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700"
+              className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 transition-colors"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -256,8 +262,9 @@ const TasksPage: React.FC = () => {
             {/* Priority Filter */}
             <select
               value={priority}
+              aria-label="Filter by priority"
               onChange={(e) => handlePriorityChange(e.target.value as Priority | "ALL")}
-              className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700"
+              className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 transition-colors"
             >
               {PRIORITY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -268,10 +275,11 @@ const TasksPage: React.FC = () => {
             <div className="flex gap-2">
               <select
                 value={sortBy}
+                aria-label="Sort by field"
                 onChange={(e) =>
                   handleSortByChange(e.target.value as "createdAt" | "updatedAt" | "dueDate")
                 }
-                className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700"
+                className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 transition-colors"
               >
                 {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -279,8 +287,9 @@ const TasksPage: React.FC = () => {
               </select>
               <select
                 value={order}
+                aria-label="Sort order"
                 onChange={(e) => handleOrderChange(e.target.value as "asc" | "desc")}
-                className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700"
+                className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 transition-colors"
               >
                 <option value="desc">Desc</option>
                 <option value="asc">Asc</option>
@@ -291,14 +300,14 @@ const TasksPage: React.FC = () => {
           {/* Page Size */}
           <div className="flex items-center gap-2 pt-1">
             <span className="text-xs text-slate-500">Rows per page:</span>
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5" role="group" aria-label="Select rows per page">
               {LIMIT_OPTIONS.map((l) => (
                 <button
                   key={l}
                   onClick={() => handleLimitChange(l)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-colors ${
+                  className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-all duration-150 focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     limit === l
-                      ? "bg-blue-600 text-white border-blue-600"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
                       : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                   }`}
                 >
@@ -309,33 +318,47 @@ const TasksPage: React.FC = () => {
           </div>
         </div>
 
-        {/*  Loading*/}
+        {/* Skeleton Loading */}
         {loading && (
-          <div className="bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center py-16">
-            <Loader2 className="h-7 w-7 text-blue-600 animate-spin mb-3" />
-            <p className="text-sm font-medium text-slate-500">Loading tasks...</p>
-          </div>
-        )}
-
-        {/*  Error */}
-        {error && !loading && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center space-y-3">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-red-100 rounded-full text-red-600">
-              <AlertCircle className="h-6 w-6" />
+          <>
+            <div className="hidden sm:block overflow-x-auto rounded-xl border border-slate-200 bg-white" aria-busy="true">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Title</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Priority</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Due Date</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Created</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TaskRowSkeleton key={i} />
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <h3 className="text-base font-semibold text-red-900">Unable to load tasks</h3>
-            <p className="text-sm text-red-600">{error}</p>
-            <button
-              onClick={fetchTasks}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg border border-red-300 bg-white text-red-700 hover:bg-red-50 transition-colors"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              Try again
-            </button>
-          </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:hidden" aria-busy="true">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <TaskCardSkeleton key={i} />
+              ))}
+            </div>
+          </>
         )}
 
-        {/* Task List */}
+        {/* Error State */}
+        {error && !loading && (
+          <ErrorCard
+            title="Unable to load tasks"
+            message={error}
+            onRetry={fetchTasks}
+          />
+        )}
+
+        {/* Task List Data */}
         {!loading && !error && data && (
           <>
             {tasks.length === 0 ? (
@@ -344,8 +367,16 @@ const TasksPage: React.FC = () => {
                   title="No tasks found"
                   description={
                     debouncedSearch || status !== "ALL" || priority !== "ALL"
-                      ? "Try adjusting your search or filters."
-                      : "Click \"New Task\" to create your first task."
+                      ? "No tasks match your current search or filter criteria."
+                      : "You haven't created any tasks yet."
+                  }
+                  action={
+                    !debouncedSearch && status === "ALL" && priority === "ALL" ? (
+                      <Button variant="primary" size="md" onClick={openCreateForm}>
+                        <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
+                        Create Task
+                      </Button>
+                    ) : undefined
                   }
                 />
               </div>
@@ -380,7 +411,7 @@ const TasksPage: React.FC = () => {
         )}
       </div>
 
-      {/*  Create / Edit  */}
+      {/* Create / Edit Modal */}
       <Modal
         isOpen={isFormOpen}
         onClose={handleCloseForm}
@@ -395,7 +426,7 @@ const TasksPage: React.FC = () => {
         />
       </Modal>
 
-      {/* Delete */}
+      {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={Boolean(deletingTask)}
         title="Delete Task"
@@ -406,7 +437,7 @@ const TasksPage: React.FC = () => {
         onCancel={() => setDeletingTask(null)}
       />
 
-      
+      {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </>
   );

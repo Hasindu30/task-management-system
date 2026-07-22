@@ -5,8 +5,11 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useAuth } from "../hooks/useAuth";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const LoginPage: React.FC = () => {
+  useDocumentTitle("Login");
+
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,7 +19,7 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  
+  // If already authenticated, redirect to dashboard or attempted URL
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/dashboard";
   if (isAuthenticated) {
     return <Navigate to={from} replace />;
@@ -70,7 +73,7 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-100 rounded-full mb-4">
-            <LogIn className="h-7 w-7 text-blue-600" />
+            <LogIn className="h-7 w-7 text-blue-600" aria-hidden="true" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
           <p className="text-sm text-slate-500 mt-1">Sign in to your task management account</p>
@@ -78,8 +81,8 @@ const LoginPage: React.FC = () => {
 
         <Card>
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs text-red-700">
-              <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs text-red-700" role="alert">
+              <AlertCircle className="h-4 w-4 shrink-0 text-red-500" aria-hidden="true" />
               <span>{errors.general}</span>
             </div>
           )}

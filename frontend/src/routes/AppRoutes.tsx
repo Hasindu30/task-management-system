@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
 import TasksPage from "../pages/TasksPage";
+import TaskDetailsPage from "../pages/TaskDetailsPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
 const AppRoutes: React.FC = () => {
@@ -22,6 +23,7 @@ const AppRoutes: React.FC = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/tasks/:id" element={<TaskDetailsPage />} />
         </Route>
 
         {/* 404 Catch-all */}

@@ -1,7 +1,7 @@
 import api from "./api";
 import type { TaskListParams, TaskListData, Task, ApiResponse } from "../types";
 
-// ─── Fetch ───────────────────────────────────────────────────────────────────
+// ─── Fetch List ──────────────────────────────────────────────────────────────
 
 export const getTasks = async (params?: TaskListParams): Promise<TaskListData> => {
   const queryParams: Record<string, string | number> = {};
@@ -23,7 +23,17 @@ export const getTasks = async (params?: TaskListParams): Promise<TaskListData> =
   return response.data.data;
 };
 
+// ─── Fetch Single Task ────────────────────────────────────────────────────────
 
+export const getTaskById = async (id: string): Promise<Task> => {
+  const response = await api.get<ApiResponse<{ task: Task }>>(`/tasks/${id}`);
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || "Failed to fetch task details");
+  }
+  return response.data.data.task;
+};
+
+// ─── Create ──────────────────────────────────────────────────────────────────
 
 export interface CreateTaskPayload {
   title: string;
@@ -41,7 +51,7 @@ export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
   return response.data.data.task;
 };
 
-
+// ─── Update ──────────────────────────────────────────────────────────────────
 
 export type UpdateTaskPayload = Partial<CreateTaskPayload>;
 
@@ -53,6 +63,7 @@ export const updateTask = async (id: string, payload: UpdateTaskPayload): Promis
   return response.data.data.task;
 };
 
+// ─── Delete ──────────────────────────────────────────────────────────────────
 
 export const deleteTask = async (id: string): Promise<void> => {
   const response = await api.delete<ApiResponse<null>>(`/tasks/${id}`);

@@ -1,4 +1,4 @@
-import React, { useEffect, type ReactNode } from "react";
+import React, { useEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 interface ModalProps {
@@ -22,26 +22,30 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = "md",
 }) => {
-  
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Lock body scroll
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  
+  // Close on Escape key
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
+    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     if (isOpen) document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
+
+  // Focus the close button when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay allows the DOM to settle
+      const t = setTimeout(() => closeButtonRef.current?.focus(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -54,13 +58,15 @@ export const Modal: React.FC<ModalProps> = ({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-200"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Panel */}
       <div
-        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col max-h-[90vh]`}
+        ref={panelRef}
+        className={`modal-enter relative w-full ${maxWidthClasses[maxWidth]} bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col max-h-[90vh]`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
@@ -68,11 +74,12 @@ export const Modal: React.FC<ModalProps> = ({
             {title}
           </h2>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-            aria-label="Close modal"
+            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+            aria-label="Close dialog"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
