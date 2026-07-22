@@ -8,19 +8,35 @@ import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();
 
-// Security middleware
+// Security headers
 app.use(helmet());
 
-// CORS configuration
+// Configure allowed CORS origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  ...env.CLIENT_URL.split(",").map((url) => url.trim()),
+  ...env.CORS_ORIGIN.split(",").map((url) => url.trim()),
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: env.CORS_ORIGIN,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, Postman, health checks)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// Request logging
-app.use(morgan("dev"));
+// Request logging (simplified format in production)
+app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
 
 // Body parsing
 app.use(express.json());
