@@ -92,7 +92,7 @@ export const AppLayout: React.FC = () => {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-        Task Management System &copy; {new Date().getFullYear()} — Full Stack Internship Assessment
+        Task Management System &copy; {new Date().getFullYear()} — Hasindu
       </footer>
     </div>
   );
